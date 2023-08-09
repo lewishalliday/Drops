@@ -22,209 +22,212 @@
 //  THE SOFTWARE.
 
 #if os(iOS)
-import UIKit
+    import UIKit
 
-internal final class DropView: UIView {
-  required init(drop: Drop) {
-    self.drop = drop
-    super.init(frame: .zero)
+    internal final class DropView: UIView {
+        required init(drop: Drop) {
+            self.drop = drop
+            super.init(frame: .zero)
 
-    backgroundColor = .secondarySystemBackground
+            backgroundColor = drop.backgroundColor
 
-    addSubview(stackView)
+            addSubview(stackView)
 
-    let constraints = createLayoutConstraints(for: drop)
-    NSLayoutConstraint.activate(constraints)
-    configureViews(for: drop)
-  }
+            let constraints = createLayoutConstraints(for: drop)
+            NSLayoutConstraint.activate(constraints)
+            configureViews(for: drop)
+        }
 
-  required init?(coder _: NSCoder) {
-    return nil
-  }
+        required init?(coder _: NSCoder) {
+            nil
+        }
 
-  override var frame: CGRect {
-    didSet { layer.cornerRadius = frame.cornerRadius }
-  }
+        override var frame: CGRect {
+            didSet { layer.cornerRadius = frame.cornerRadius }
+        }
 
-  override var bounds: CGRect {
-    didSet { layer.cornerRadius = frame.cornerRadius }
-  }
+        override var bounds: CGRect {
+            didSet { layer.cornerRadius = frame.cornerRadius }
+        }
 
-  let drop: Drop
+        let drop: Drop
 
-  func createLayoutConstraints(for drop: Drop) -> [NSLayoutConstraint] {
-    var constraints: [NSLayoutConstraint] = []
+        func createLayoutConstraints(for drop: Drop) -> [NSLayoutConstraint] {
+            var constraints: [NSLayoutConstraint] = []
 
-    constraints += [
-      imageView.heightAnchor.constraint(equalToConstant: 25),
-      imageView.widthAnchor.constraint(equalToConstant: 25)
-    ]
+            constraints += [
+                imageView.heightAnchor.constraint(equalToConstant: 25),
+                imageView.widthAnchor.constraint(equalToConstant: 25),
+            ]
 
-    constraints += [
-      button.heightAnchor.constraint(equalToConstant: 35),
-      button.widthAnchor.constraint(equalToConstant: 35)
-    ]
+            constraints += [
+                button.heightAnchor.constraint(equalToConstant: 35),
+                button.widthAnchor.constraint(equalToConstant: 35),
+            ]
 
-    var insets = UIEdgeInsets(top: 7.5, left: 12.5, bottom: 7.5, right: 12.5)
+            var insets = UIEdgeInsets(top: 7.5, left: 12.5, bottom: 7.5, right: 12.5)
 
-    if drop.icon == nil {
-      insets.left = 40
+            if drop.icon == nil {
+                insets.left = 40
+            }
+
+            if drop.action?.icon == nil {
+                insets.right = 40
+            }
+
+            if drop.subtitle == nil {
+                insets.top = 15
+                insets.bottom = 15
+                if drop.action?.icon != nil {
+                    insets.top = 10
+                    insets.bottom = 10
+                    insets.right = 10
+                }
+            }
+
+            if drop.icon == nil, drop.action?.icon == nil {
+                insets.left = 50
+                insets.right = 50
+            }
+
+            constraints += [
+                stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: insets.left),
+                stackView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: insets.top),
+                stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -insets.right),
+                stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -insets.bottom),
+            ]
+
+            return constraints
+        }
+
+        func configureViews(for drop: Drop) {
+            clipsToBounds = true
+
+            titleLabel.text = drop.title
+            titleLabel.textColor = drop.backgroundColor?.contrastColor()
+            titleLabel.numberOfLines = drop.titleNumberOfLines
+
+            subtitleLabel.text = drop.subtitle
+            subtitleLabel.numberOfLines = drop.subtitleNumberOfLines
+            subtitleLabel.isHidden = drop.subtitle == nil
+            subtitleLabel.textColor = drop.backgroundColor?.contrastColor()
+
+            imageView.image = drop.icon
+            imageView.isHidden = drop.icon == nil
+            imageView.tintColor = drop.tintColor
+
+            button.setImage(drop.action?.icon, for: .normal)
+            button.isHidden = drop.action?.icon == nil
+
+            if let action = drop.action, action.icon == nil {
+                let tap = UITapGestureRecognizer(target: self, action: #selector(didTapButton))
+                addGestureRecognizer(tap)
+            }
+
+            layer.shadowColor = UIColor.black.cgColor
+            layer.shadowOffset = .zero
+            layer.shadowRadius = 25
+            layer.shadowOpacity = 0.15
+            layer.shouldRasterize = true
+            layer.rasterizationScale = UIScreen.main.scale
+            layer.masksToBounds = false
+        }
+
+        @objc
+        func didTapButton() {
+            drop.action?.handler()
+        }
+
+        lazy var titleLabel: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.textAlignment = .center
+            label.textColor = .label
+            label.font = UIFont.preferredFont(forTextStyle: .subheadline).bold
+            label.adjustsFontForContentSizeCategory = true
+            label.adjustsFontSizeToFitWidth = true
+            return label
+        }()
+
+        lazy var subtitleLabel: UILabel = {
+            let label = UILabel()
+            label.translatesAutoresizingMaskIntoConstraints = false
+            label.textAlignment = .center
+            label.textColor = UIAccessibility.isDarkerSystemColorsEnabled ? .label : .secondaryLabel
+            label.font = UIFont.preferredFont(forTextStyle: .subheadline)
+            label.adjustsFontForContentSizeCategory = true
+            label.adjustsFontSizeToFitWidth = true
+            return label
+        }()
+
+        lazy var imageView: UIImageView = {
+            let view = RoundImageView()
+            view.translatesAutoresizingMaskIntoConstraints = false
+            view.contentMode = .scaleAspectFit
+            view.clipsToBounds = true
+            view.tintColor = UIAccessibility.isDarkerSystemColorsEnabled ? .label : .secondaryLabel
+            return view
+        }()
+
+        lazy var button: UIButton = {
+            let button = RoundButton(type: .system)
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
+            button.clipsToBounds = true
+            button.backgroundColor = .link
+            button.tintColor = .white
+            button.imageView?.contentMode = .scaleAspectFit
+            button.contentEdgeInsets = .init(top: 7.5, left: 7.5, bottom: 7.5, right: 7.5)
+            return button
+        }()
+
+        lazy var labelsStackView: UIStackView = {
+            let view = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
+            view.translatesAutoresizingMaskIntoConstraints = false
+            view.axis = .vertical
+            view.alignment = .fill
+            view.distribution = .fill
+            view.spacing = -1
+            return view
+        }()
+
+        lazy var stackView: UIStackView = {
+            let view = UIStackView(arrangedSubviews: [imageView, labelsStackView, button])
+            view.translatesAutoresizingMaskIntoConstraints = false
+            view.axis = .horizontal
+            view.alignment = .center
+            view.distribution = .fill
+            if drop.icon != nil, drop.action?.icon != nil {
+                view.spacing = 20
+            } else {
+                view.spacing = 15
+            }
+            return view
+        }()
     }
 
-    if drop.action?.icon == nil {
-      insets.right = 40
+    final class RoundButton: UIButton {
+        override var bounds: CGRect {
+            didSet { layer.cornerRadius = frame.cornerRadius }
+        }
     }
 
-    if drop.subtitle == nil {
-      insets.top = 15
-      insets.bottom = 15
-      if drop.action?.icon != nil {
-        insets.top = 10
-        insets.bottom = 10
-        insets.right = 10
-      }
+    final class RoundImageView: UIImageView {
+        override var bounds: CGRect {
+            didSet { layer.cornerRadius = frame.cornerRadius }
+        }
     }
 
-    if drop.icon == nil, drop.action?.icon == nil {
-      insets.left = 50
-      insets.right = 50
+    extension UIFont {
+        var bold: UIFont {
+            guard let descriptor = fontDescriptor.withSymbolicTraits(.traitBold) else { return self }
+            return UIFont(descriptor: descriptor, size: pointSize)
+        }
     }
 
-    constraints += [
-      stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: insets.left),
-      stackView.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: insets.top),
-      stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -insets.right),
-      stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -insets.bottom)
-    ]
-
-    return constraints
-  }
-
-  func configureViews(for drop: Drop) {
-    clipsToBounds = true
-
-    titleLabel.text = drop.title
-    titleLabel.numberOfLines = drop.titleNumberOfLines
-
-    subtitleLabel.text = drop.subtitle
-    subtitleLabel.numberOfLines = drop.subtitleNumberOfLines
-    subtitleLabel.isHidden = drop.subtitle == nil
-
-    imageView.image = drop.icon
-    imageView.isHidden = drop.icon == nil
-
-    button.setImage(drop.action?.icon, for: .normal)
-    button.isHidden = drop.action?.icon == nil
-
-    if let action = drop.action, action.icon == nil {
-      let tap = UITapGestureRecognizer(target: self, action: #selector(didTapButton))
-      addGestureRecognizer(tap)
+    extension CGRect {
+        var cornerRadius: CGFloat {
+            min(width, height) / 2
+        }
     }
-
-    layer.shadowColor = UIColor.black.cgColor
-    layer.shadowOffset = .zero
-    layer.shadowRadius = 25
-    layer.shadowOpacity = 0.15
-    layer.shouldRasterize = true
-    layer.rasterizationScale = UIScreen.main.scale
-    layer.masksToBounds = false
-  }
-
-  @objc
-  func didTapButton() {
-    drop.action?.handler()
-  }
-
-  lazy var titleLabel: UILabel = {
-    let label = UILabel()
-    label.translatesAutoresizingMaskIntoConstraints = false
-    label.textAlignment = .center
-    label.textColor = .label
-    label.font = UIFont.preferredFont(forTextStyle: .subheadline).bold
-    label.adjustsFontForContentSizeCategory = true
-    label.adjustsFontSizeToFitWidth = true
-    return label
-  }()
-
-  lazy var subtitleLabel: UILabel = {
-    let label = UILabel()
-    label.translatesAutoresizingMaskIntoConstraints = false
-    label.textAlignment = .center
-    label.textColor = UIAccessibility.isDarkerSystemColorsEnabled ? .label : .secondaryLabel
-    label.font = UIFont.preferredFont(forTextStyle: .subheadline)
-    label.adjustsFontForContentSizeCategory = true
-    label.adjustsFontSizeToFitWidth = true
-    return label
-  }()
-
-  lazy var imageView: UIImageView = {
-    let view = RoundImageView()
-    view.translatesAutoresizingMaskIntoConstraints = false
-    view.contentMode = .scaleAspectFit
-    view.clipsToBounds = true
-    view.tintColor = UIAccessibility.isDarkerSystemColorsEnabled ? .label : .secondaryLabel
-    return view
-  }()
-
-  lazy var button: UIButton = {
-    let button = RoundButton(type: .system)
-    button.translatesAutoresizingMaskIntoConstraints = false
-    button.addTarget(self, action: #selector(didTapButton), for: .touchUpInside)
-    button.clipsToBounds = true
-    button.backgroundColor = .link
-    button.tintColor = .white
-    button.imageView?.contentMode = .scaleAspectFit
-    button.contentEdgeInsets = .init(top: 7.5, left: 7.5, bottom: 7.5, right: 7.5)
-    return button
-  }()
-
-  lazy var labelsStackView: UIStackView = {
-    let view = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
-    view.translatesAutoresizingMaskIntoConstraints = false
-    view.axis = .vertical
-    view.alignment = .fill
-    view.distribution = .fill
-    view.spacing = -1
-    return view
-  }()
-
-  lazy var stackView: UIStackView = {
-    let view = UIStackView(arrangedSubviews: [imageView, labelsStackView, button])
-    view.translatesAutoresizingMaskIntoConstraints = false
-    view.axis = .horizontal
-    view.alignment = .center
-    view.distribution = .fill
-    if drop.icon != nil, drop.action?.icon != nil {
-      view.spacing = 20
-    } else {
-      view.spacing = 15
-    }
-    return view
-  }()
-}
-
-final class RoundButton: UIButton {
-  override var bounds: CGRect {
-    didSet { layer.cornerRadius = frame.cornerRadius }
-  }
-}
-
-final class RoundImageView: UIImageView {
-  override var bounds: CGRect {
-    didSet { layer.cornerRadius = frame.cornerRadius }
-  }
-}
-
-extension UIFont {
-  var bold: UIFont {
-    guard let descriptor = fontDescriptor.withSymbolicTraits(.traitBold) else { return self }
-    return UIFont(descriptor: descriptor, size: pointSize)
-  }
-}
-
-extension CGRect {
-  var cornerRadius: CGFloat {
-    return min(width, height) / 2
-  }
-}
 #endif

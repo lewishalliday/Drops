@@ -40,6 +40,7 @@
 		078898D02644A6CC009F04A5 /* WindowViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0785D37D26416DDF004D6171 /* WindowViewController.swift */; };
 		07CEDD3B2645EEC0004EE4CD /* DropsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07CEDD3A2645EEBF004EE4CD /* DropsTests.swift */; };
 		07D8147726361DB7003F51DB /* Drops.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07D8146D26361DB7003F51DB /* Drops.framework */; };
+		277B9EF52A8434AD00154835 /* UIColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277B9EF42A8434AD00154835 /* UIColor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -130,6 +131,7 @@
 		07D8149D26361DE8003F51DB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = ../UIKitExample/ViewController.swift; sourceTree = "<group>"; };
 		07EB028828F08EA900ABC5B3 /* SwiftUIExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SwiftUIExample.entitlements; sourceTree = "<group>"; };
 		07EB028928F08ECE00ABC5B3 /* UIKitExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UIKitExample.entitlements; sourceTree = "<group>"; };
+		277B9EF42A8434AD00154835 /* UIColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -237,6 +239,7 @@
 				0785D38C2641F487004D6171 /* Presenter.swift */,
 				0785D37B26416DB3004D6171 /* Weak.swift */,
 				0785D37D26416DDF004D6171 /* WindowViewController.swift */,
+				277B9EF42A8434AD00154835 /* UIColor.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -497,6 +500,7 @@
 				0785D38526416EF3004D6171 /* PassthroughView.swift in Sources */,
 				0785D38D2641F487004D6171 /* Presenter.swift in Sources */,
 				0785D38926416EF3004D6171 /* DropView.swift in Sources */,
+				277B9EF52A8434AD00154835 /* UIColor.swift in Sources */,
 				0785D38726416EF3004D6171 /* Drop.swift in Sources */,
 				0785D38826416EF3004D6171 /* Animator.swift in Sources */,
 				0785D38626416EF3004D6171 /* AnimationContext.swift in Sources */,
